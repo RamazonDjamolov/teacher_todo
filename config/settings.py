@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 
     # 3 rd apps
     'rest_framework',
+    'django_extensions',
 
     # local apps
     'task_manager',
