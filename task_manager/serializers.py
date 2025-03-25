@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from accounts.serializers import UserSerializer
 from task_manager.models import Project
 
 
@@ -20,7 +21,8 @@ class ProjectSerializers(serializers.Serializer):
         return Project.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        return 1
+        Project.objects.filter(id=instance.id).update(**validated_data)
+        return instance
 
     def save(self, **kwargs):
         validated_data = {**self.validated_data, **kwargs}
@@ -28,4 +30,32 @@ class ProjectSerializers(serializers.Serializer):
             self.instance = self.update(self.instance, validated_data)
         else:
             self.instance = self.create(validated_data)
+        print(self.instance)
         return self.instance
+
+
+# class ProjectDetailSerializer(serializers.Serializer):
+#     id = serializers.IntegerField(read_only=True)
+#     name = serializers.CharField(max_length=255)
+#     description = serializers.CharField()
+#     updated_at = serializers.DateTimeField(read_only=True)
+#     owner = serializers.IntegerField()
+#     members = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+
+# model serializer
+
+class ProjectDetailModelSerializer(serializers.ModelSerializer):
+    owner = UserSerializer()
+    members = UserSerializer(many=True)
+
+    class Meta:
+        model = Project
+        fields = '__all__'
+
+
+class ProjectCreateAndUpdateSerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = Project
+        fields = '__all__'

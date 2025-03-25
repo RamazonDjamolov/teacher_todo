@@ -3,5 +3,6 @@ from task_manager import views
 
 urlpatterns = [
     path('', views.FirstAPIView.as_view(), name='first'),
-    path('project', views.ProjectAPIView.as_view(), name='project_list')
+    path('project/', views.ProjectAPIView.as_view(), name='project_list'),
+    path('project/<int:pk>/', views.ProjectAPIView.as_view(), name='project_detail')
 ]
