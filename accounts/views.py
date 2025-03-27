@@ -2,7 +2,7 @@ from django.contrib.auth import login, logout
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.serializers import LoginSerializers, UserSerializer
+from accounts.serializers import LoginSerializers, UserSerializer, UserCreateSerializers
 
 
 class LoginAPIView(APIView):
@@ -25,3 +25,11 @@ class SessionAPIView(APIView):
         if request.user.is_anonymous:
             return Response(data={"message": "not login"})
         return Response(UserSerializer(request.user).data)
+
+
+class RegisterAPIView(APIView):
+    def post(self, request):
+        serializers = UserCreateSerializers(data=request.data)
+        serializers.is_valid(raise_exception=True)
+        user = serializers.save()
+        return Response(UserSerializer(user).data)
