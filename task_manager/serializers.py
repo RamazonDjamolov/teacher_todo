@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from accounts.serializers import UserSerializer
-from task_manager.models import Project
+from task_manager.models import Project, Task
 
 
 # custom serializers
@@ -11,6 +11,7 @@ class ProjectSerializers(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     description = serializers.CharField()
     updated_at = serializers.DateTimeField(read_only=True)
+    total_task = serializers.IntegerField()
 
     def validate_name(self, value):
         if len(value) < 3:
@@ -55,7 +56,12 @@ class ProjectDetailModelSerializer(serializers.ModelSerializer):
 
 
 class ProjectCreateAndUpdateSerializers(serializers.ModelSerializer):
-
     class Meta:
         model = Project
         fields = '__all__'
+
+
+class TaskSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = "__all__"
