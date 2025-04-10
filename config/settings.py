@@ -116,10 +116,22 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'accounts.authentication.CsrfExemptSessionAuthentication',
+        'accounts.authentication.JWTAuthentication',
     ),
+
     'DEFAULT_PAGINATION_CLASS': 'task_manager.pagination.CustomPagination',
     # 'PAGE_SIZE': 5
 }
+# REST_FRAMEWORK = {
+#
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.TokenAuthentication',
+#         'accounts.authentication.CsrfExemptSessionAuthentication',
+#
+#     ],
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAuthenticated',
+#     ]}
 
 LANGUAGE_CODE = 'en-us'
 

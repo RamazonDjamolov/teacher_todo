@@ -1,8 +1,10 @@
 from django.contrib.auth import login, logout
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 
-from accounts.serializers import LoginSerializers, UserSerializer, UserCreateSerializers
+from accounts.serializers import LoginSerializers, UserSerializer, UserCreateSerializers, LoginWithTokenSerializer
 
 
 class LoginAPIView(APIView):
@@ -33,3 +35,13 @@ class RegisterAPIView(APIView):
         serializers.is_valid(raise_exception=True)
         user = serializers.save()
         return Response(UserSerializer(user).data)
+
+
+class LoginWithTokenViewSet(GenericViewSet):
+    serializer_class = LoginWithTokenSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)

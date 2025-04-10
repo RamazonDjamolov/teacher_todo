@@ -2,6 +2,7 @@ from django.db.models import Sum, Count, Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, \
     DestroyModelMixin
@@ -161,6 +162,8 @@ class TaskViewSet(ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializers
     filter_backends = [DjangoFilterBackend]
+    # authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     filterset_fields = ['status', 'assign_to']
     pagination_class = None
 

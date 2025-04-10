@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from accounts.models import User
+from accounts.utils import create_token
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -58,3 +59,25 @@ class LoginSerializers(serializers.Serializer):
             raise ValidationError('user in active')
 
         return {"user": user}
+
+
+class LoginWithTokenSerializer(serializers.Serializer):
+    access = serializers.CharField(read_only=True)
+    refresh = serializers.CharField(read_only=True)
+    email = serializers.EmailField(write_only=True)
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+
+        user = authenticate(email=email, password=password)
+
+        if not user:
+            raise ValidationError('Email or Password incorrect')
+
+        if not user.is_active:
+            raise ValidationError('user in active')
+
+        token = create_token(user.id)
+        return {"access": token.get('access'), 'refresh': token.get('refresh')}
