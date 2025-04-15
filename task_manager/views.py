@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet, ModelViewSet, GenericViewSet
 
+from accounts.permissions import IsAdmin
 from task_manager.models import Project, Task
 from task_manager.serializers import ProjectSerializers, ProjectDetailModelSerializer, \
     ProjectCreateAndUpdateSerializers, TaskSerializers
@@ -172,3 +173,8 @@ class TaskViewSet(ModelViewSet):
     #     if status:
     #         return self.queryset.filter(status=status)
     #     return self.queryset
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'destroy','partial_update']:
+            return [IsAuthenticated(), IsAdmin()]
+        return super(TaskViewSet, self).get_permissions()
