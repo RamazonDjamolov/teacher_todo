@@ -1,9 +1,13 @@
 from django.contrib.auth import login, logout
-from rest_framework.permissions import AllowAny
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.mixins import ListModelMixin
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
+from accounts.models import User
 from accounts.serializers import LoginSerializers, UserSerializer, UserCreateSerializers, LoginWithTokenSerializer
 
 
@@ -30,6 +34,14 @@ class SessionAPIView(APIView):
 
 
 class RegisterAPIView(APIView):
+    @swagger_auto_schema(
+        request_body=UserCreateSerializers,
+        responses={
+            200: openapi.Response(
+                'Success', UserSerializer
+            )
+        }
+    )
     def post(self, request):
         serializers = UserCreateSerializers(data=request.data)
         serializers.is_valid(raise_exception=True)
@@ -45,3 +57,10 @@ class LoginWithTokenViewSet(GenericViewSet):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+
+class UserViewSet(GenericViewSet, ListModelMixin):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None

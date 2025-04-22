@@ -8,6 +8,7 @@ from rest_framework_simplejwt.views import (
 
 router = DefaultRouter()
 router.register('token-login', views.LoginWithTokenViewSet, basename='login_token')
+router.register('users',views.UserViewSet, basename='users')
 
 urlpatterns = [
                   # path('login/', views.LoginAPIView.as_view(), name='login'),

@@ -65,3 +65,27 @@ class TaskSerializers(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = "__all__"
+
+
+class ProjectListSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ["id", "name", 'description', 'created_at', 'owner', 'members']
+
+
+class ProjectCreateSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['name', 'description', 'members']
+
+
+class ProjectUpdateSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['name', 'description', 'members']
+
+
+class ProjectAddMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['members']

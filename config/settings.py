@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'django_extensions',
     'django_filters',
+    'drf_yasg',
 
     # local apps
     'task_manager',
@@ -159,6 +160,19 @@ REST_FRAMEWORK = {
 #         'rest_framework.permissions.IsAuthenticated',
 #     ]}
 
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "Type in the *'Value'* input box below: "
+                           "**'Bearer &lt;JWT&gt;'**, "
+                           "where JWT is the JSON web token you get back when logging in.",
+        },
+    },
+    "DOC_EXPANSION": False,
+}
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'

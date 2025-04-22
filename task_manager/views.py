@@ -1,5 +1,10 @@
+from pickle import FALSE
+
+from django.core.serializers import serialize
 from django.db.models import Sum, Count, Q
+from django.db.models.functions import Trunc
 from django.shortcuts import get_object_or_404
+from django.template.context_processors import request
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.authentication import TokenAuthentication
@@ -12,10 +17,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet, ModelViewSet, GenericViewSet
 
-from accounts.permissions import IsAdmin
+from accounts.permissions import IsAdmin, IsOwner, IsMember
+from accounts.serializers import UserSerializer
 from task_manager.models import Project, Task
 from task_manager.serializers import ProjectSerializers, ProjectDetailModelSerializer, \
-    ProjectCreateAndUpdateSerializers, TaskSerializers
+    ProjectCreateAndUpdateSerializers, TaskSerializers, ProjectListSerializers, ProjectCreateSerializers, \
+    ProjectUpdateSerializers, ProjectAddMemberSerializer
 
 
 # from django.contrib.postgres.search import TrigramSimilarity
@@ -89,36 +96,36 @@ class ProjectAPIView(APIView):
 #     max_page_size = 100
 
 
-class ProjectViewSet(ModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializers
-    permission_classes = [IsAuthenticated, ]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['name', 'description']
-
-    # pagination_class = CustomPagination
-
-    def get_serializer_class(self):
-        if self.action in ['create', 'update']:
-            return ProjectCreateAndUpdateSerializers
-        elif self.action == 'retrieve':
-            return ProjectDetailModelSerializer
-        return self.serializer_class
-
-    def get_queryset(self):
-        # q = self.request.query_params.get('search')
-        queryset = self.queryset.annotate(total_task=Count('task_project'))
-        # if q:
-        # return queryset.annotate(s=TrigramSimilarity('name', q)).filter(s__gt=0.3).order_by('-s')
-        # return queryset.filter(Q(name__icontains=q) | Q(description__icontains=q))
-        return queryset
-
-    @action(methods=['get'], detail=True, url_path='project_task')
-    def tasks(self, request, pk=None):
-        project = get_object_or_404(Project, id=pk)
-        tasks = project.task_project.all()
-        serializer = TaskSerializers(tasks, many=True)
-        return Response(serializer.data)
+# class ProjectViewSet(ModelViewSet):
+#     queryset = Project.objects.all()
+#     serializer_class = ProjectSerializers
+#     permission_classes = [IsAuthenticated, ]
+#     filter_backends = [filters.SearchFilter]
+#     search_fields = ['name', 'description']
+#
+#     # pagination_class = CustomPagination
+#
+#     def get_serializer_class(self):
+#         if self.action in ['create', 'update']:
+#             return ProjectCreateAndUpdateSerializers
+#         elif self.action == 'retrieve':
+#             return ProjectDetailModelSerializer
+#         return self.serializer_class
+#
+#     def get_queryset(self):
+#         # q = self.request.query_params.get('search')
+#         queryset = self.queryset.annotate(total_task=Count('task_project'))
+#         # if q:
+#         # return queryset.annotate(s=TrigramSimilarity('name', q)).filter(s__gt=0.3).order_by('-s')
+#         # return queryset.filter(Q(name__icontains=q) | Q(description__icontains=q))
+#         return queryset
+#
+#     @action(methods=['get'], detail=True, url_path='project_task')
+#     def tasks(self, request, pk=None):
+#         project = get_object_or_404(Project, id=pk)
+#         tasks = project.task_project.all()
+#         serializer = TaskSerializers(tasks, many=True)
+#         return Response(serializer.data)
 
 
 # oddiy ViewSet
@@ -175,6 +182,57 @@ class TaskViewSet(ModelViewSet):
     #     return self.queryset
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'destroy','partial_update']:
+        if self.action in ['create', 'update', 'destroy', 'partial_update']:
             return [IsAuthenticated(), IsAdmin()]
         return super(TaskViewSet, self).get_permissions()
+
+
+class ProjectViewSet(ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectListSerializers
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self):
+        if self.action in ['list', 'retrieve']:
+            return self.queryset.filter(owner=self.request.user)
+        elif self.action == 'my_project_member':
+            return self.queryset.exclude(owner=self.request.user).filter(members__exact=self.request.user)
+        return self.queryset
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return ProjectCreateSerializers
+        elif self.action in ['update', "partial_update"]:
+            return ProjectUpdateSerializers
+        return self.serializer_class
+
+    # def get_permissions(self):
+    #     if self.action == 'project_add_member':
+    #         return [IsAuthenticated(), IsOwner()]
+    #     return super(ProjectViewSet, self).get_permissions()
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    @action(methods=['get'], detail=False)
+    def my_project_member(self, request):
+        project = self.get_queryset()
+        serializers = ProjectListSerializers(project, many=True)
+        return Response(serializers.data)
+
+    @action(methods=['put'], detail=True, serializer_class=ProjectAddMemberSerializer,
+            permission_classes=[IsAuthenticated, IsOwner])
+    def project_add_member(self, request, pk=None):
+        project = self.get_object()
+        serializers = ProjectAddMemberSerializer(data=request.data, instance=project, partial=True)
+        serializers.is_valid(raise_exception=True)
+        serializers.save()
+        return Response(serializers.data)
+
+    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated, IsMember | IsOwner])
+    def project_members(self, request, pk=None):
+        project = self.get_object()
+        users = project.members.all()
+        serializers = UserSerializer(users, many=True)
+        return Response(serializers.data)
