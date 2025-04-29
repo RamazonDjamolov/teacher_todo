@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'task_manager',
     'accounts',
     'common',
+    'notifications',
 ]
 
 MIDDLEWARE = [

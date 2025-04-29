@@ -76,3 +76,26 @@ class UserRegisterSerializersTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['username'], 'test')
+
+
+class UserLoginTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.login_url = reverse('token_obtain_pair')
+        get_user_model().objects.create_user(username='test',
+                                             email='test@gmail.com',
+                                             password='test')
+
+        self.login_data = {
+            'email': 'test@gmail.com',
+            'password': 'test'
+        }
+
+    def test_user_login(self):
+        response = self.client.post(
+            self.login_url,
+            data=self.login_data
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('access', response.data.keys())
+        self.assertIn('refresh', response.data.keys())
