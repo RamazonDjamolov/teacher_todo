@@ -10,3 +10,5 @@ drf-yasg==1.21.10
 redis==5.2.1
 celery==5.5.1
 django-celery-beat==2.8.0
+daphne==4.1.2
+channels==4.2.2
