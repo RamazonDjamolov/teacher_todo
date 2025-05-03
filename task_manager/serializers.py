@@ -68,9 +68,21 @@ class TaskSerializers(serializers.ModelSerializer):
 
 
 class ProjectListSerializers(serializers.ModelSerializer):
+    total_task = serializers.IntegerField()
+
     class Meta:
         model = Project
-        fields = ["id", "name", 'description', 'created_at', 'owner', 'members']
+        fields = ["id", "name", 'description', 'created_at', 'owner', 'members', 'total_task']
+
+
+class ProjectDetailSerializers(serializers.ModelSerializer):
+    owner = UserSerializer()
+    members = UserSerializer(many=True)
+    total_task = serializers.IntegerField()
+
+    class Meta:
+        model = Project
+        fields = ["id", "name", 'description', 'created_at', 'owner', 'members', 'total_task']
 
 
 class ProjectCreateSerializers(serializers.ModelSerializer):

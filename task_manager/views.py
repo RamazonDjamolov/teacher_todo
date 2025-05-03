@@ -194,6 +194,8 @@ class ProjectViewSet(ModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
+        self.queryset = self.queryset.prefetch_related('members').select_related(
+            'owner').annotate(total_task=Count('task_project'))
         if self.action in ['list', 'retrieve']:
             return self.queryset.filter(owner=self.request.user)
         elif self.action == 'my_project_member':
@@ -205,6 +207,8 @@ class ProjectViewSet(ModelViewSet):
             return ProjectCreateSerializers
         elif self.action in ['update', "partial_update"]:
             return ProjectUpdateSerializers
+        elif self.action == 'retrieve':
+            return ProjectDetailModelSerializer
         return self.serializer_class
 
     # def get_permissions(self):
