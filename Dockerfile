@@ -11,14 +11,10 @@ WORKDIR /app
 COPY . /app
 
 # Kerakli kutubxonalarni o'rnatish
-RUN pip install --upgrade pip && pip install -r requirment.txt
-
-# Statik fayllarni tayyorlash (agar kerak bo'lsa)
-#RUN python manage.py collectstatic --noinput
+RUN pip install -r requirment.txt
 
 # Port ochish (optional)
 EXPOSE 8000
 
-# Container ishga tushganda Django serverni ishga tushiramiz
-#CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
 ENTRYPOINT ["./entrypoint.sh"]

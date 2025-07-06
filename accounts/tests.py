@@ -20,9 +20,7 @@ class UserCreateSerializersIsValidTests(TestCase):
             're_password': 'test'
         }
 
-        # self.not_valid_data = self.validate_data.copy()
-        # self.gmail_not_valid_data['email'] = 'test@gmail'
-        # self.not_valid_data['password'] = 'test2'
+
 
     def test_user_serializers_is_valid(self):
         serializers = UserCreateSerializers(data=self.validate_data)
